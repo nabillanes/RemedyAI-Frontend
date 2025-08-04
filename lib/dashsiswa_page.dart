@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:remedyai/remedstart_page.dart';
+import 'settings.dart';
 
 class DashboardSiswaPage extends StatelessWidget {
   final String namaLengkap;
@@ -122,6 +123,12 @@ class DashboardSiswaPage extends StatelessWidget {
                         _menuItem(Icons.history, "Riwayat Nilai", () {}),
                         _menuItem(Icons.chat, "Chat dengan AI", () {}),
                         _menuItem(Icons.settings, "Pengaturan", () {}),
+                        _menuItem(Icons.settings, "Pengaturan", () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const SettingsPage()),
+                          );
+                        }),
                       ],
                     ),
                   ),
@@ -203,4 +210,4 @@ class DashboardSiswaPage extends StatelessWidget {
       ),
     );
   }
-} 
+}

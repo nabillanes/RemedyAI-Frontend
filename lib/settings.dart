@@ -53,6 +53,8 @@ class _SettingsPageState extends State<SettingsPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Pengaturan berhasil disimpan.')),
         );
+
+        Navigator.pop(context, true); // agar dashboard bisa refresh nama
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Gagal menyimpan pengaturan: $e')),
@@ -69,68 +71,105 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Pengaturan')),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: ListView(
-          children: [
-            Text(
-              'Pengaturan Akun',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        title: Text('Pengaturan'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+      ),
+      body: Container(
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('assets/bg_main.png'), // ganti sesuai background dashboard
+            fit: BoxFit.cover,
+          ),
+        ),
+        alignment: Alignment.topCenter,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 32),
+        child: SingleChildScrollView(
+          child: Container(
+            width: 400, // Biar tidak terlalu lebar
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.9),
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black26,
+                  blurRadius: 8,
+                  offset: Offset(0, 4),
+                ),
+              ],
             ),
-            SizedBox(height: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  'Pengaturan Akun',
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20,
+                      color: Colors.black87),
+                ),
+                SizedBox(height: 16),
 
-            TextFormField(
-              initialValue: namaLengkap,
-              decoration: InputDecoration(
-                labelText: 'Nama Lengkap',
-                border: OutlineInputBorder(),
-              ),
-              onChanged: (val) => namaLengkap = val,
-            ),
-            SizedBox(height: 16),
+                TextFormField(
+                  initialValue: namaLengkap,
+                  decoration: InputDecoration(
+                    labelText: 'Nama Lengkap',
+                    border: OutlineInputBorder(),
+                  ),
+                  onChanged: (val) => namaLengkap = val,
+                ),
+                SizedBox(height: 16),
 
-            DropdownButtonFormField<String>(
-              value: selectedKelas.isEmpty ? kelasList.first : selectedKelas,
-              items: kelasList
-                  .map(
-                    (kelas) =>
-                        DropdownMenuItem(value: kelas, child: Text(kelas)),
-                  )
-                  .toList(),
-              onChanged: (val) => setState(() => selectedKelas = val!),
-              decoration: InputDecoration(
-                labelText: 'Kelas',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            SizedBox(height: 16),
+                DropdownButtonFormField<String>(
+                  value: selectedKelas.isEmpty ? kelasList.first : selectedKelas,
+                  items: kelasList
+                      .map((kelas) =>
+                          DropdownMenuItem(value: kelas, child: Text(kelas)))
+                      .toList(),
+                  onChanged: (val) => setState(() => selectedKelas = val!),
+                  decoration: InputDecoration(
+                    labelText: 'Kelas',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                SizedBox(height: 16),
 
-            SwitchListTile(
-              title: Text('Tema Gelap'),
-              value: isDarkMode,
-              onChanged: (val) => setState(() => isDarkMode = val),
-            ),
-            SizedBox(height: 16),
+                SwitchListTile(
+                  title: Text('Tema Gelap'),
+                  value: isDarkMode,
+                  onChanged: (val) => setState(() => isDarkMode = val),
+                ),
+                SizedBox(height: 16),
 
-            ElevatedButton(
-              onPressed: _updateUserData,
-              child: Text('Simpan Perubahan'),
-            ),
-            SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: _updateUserData,
+                  style: ElevatedButton.styleFrom(
+                    padding: EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                    backgroundColor: Theme.of(context).primaryColor,
+                  ),
+                  child: Text('Simpan Perubahan'),
+                ),
+                SizedBox(height: 16),
 
-            Divider(),
-            ListTile(
-              title: Text('Ganti Kata Sandi'),
-              trailing: Icon(Icons.chevron_right),
-              onTap: () => Navigator.pushNamed(context, '/change-password'),
+                Divider(),
+                ListTile(
+                  title: Text('Ganti Kata Sandi'),
+                  trailing: Icon(Icons.chevron_right),
+                  onTap: () => Navigator.pushNamed(context, '/change-password'),
+                ),
+                ListTile(
+                  title: Text('Logout', style: TextStyle(color: Colors.red)),
+                  trailing: Icon(Icons.logout, color: Colors.red),
+                  onTap: _logout,
+                ),
+              ],
             ),
-            ListTile(
-              title: Text('Logout', style: TextStyle(color: Colors.red)),
-              trailing: Icon(Icons.logout, color: Colors.red),
-              onTap: _logout,
-            ),
-          ],
+          ),
         ),
       ),
     );

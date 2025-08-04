@@ -35,79 +35,79 @@ class _SignInPageState extends State<SignInPage> {
   }
 
   Future<void> _handleLogin() async {
-  String email = _emailController.text.trim();
-  String password = _passwordController.text;
+    String email = _emailController.text.trim();
+    String password = _passwordController.text;
 
-  if (email.isEmpty || password.isEmpty) {
-    _showErrorDialog('Email dan password tidak boleh kosong.');
-    return;
-  }
+    if (email.isEmpty || password.isEmpty) {
+      _showErrorDialog('Email dan password tidak boleh kosong.');
+      return;
+    }
 
-  setState(() => _isLoading = true);
+    setState(() => _isLoading = true);
 
-  try {
-    UserCredential userCredential = await FirebaseAuth.instance
-        .signInWithEmailAndPassword(email: email, password: password);
+    try {
+      UserCredential userCredential = await FirebaseAuth.instance
+          .signInWithEmailAndPassword(email: email, password: password);
 
-    String uid = userCredential.user!.uid;
+      String uid = userCredential.user!.uid;
 
-    // Ambil role dari Firestore
-    String role = '';
-    DocumentSnapshot snapshot = await FirebaseFirestore.instance.collection('siswa').doc(uid).get();
-    if (snapshot.exists) {
-      role = 'Siswa';
-    } else {
-      snapshot = await FirebaseFirestore.instance.collection('guru').doc(uid).get();
+      // Ambil role dari Firestore
+      String role = '';
+      DocumentSnapshot snapshot = await FirebaseFirestore.instance.collection('siswa').doc(uid).get();
       if (snapshot.exists) {
-        role = 'Guru';
+        role = 'Siswa';
+      } else {
+        snapshot = await FirebaseFirestore.instance.collection('guru').doc(uid).get();
+        if (snapshot.exists) {
+          role = 'Guru';
+        }
       }
-    }
 
-    if (role.isEmpty) {
-      throw FirebaseAuthException(code: 'data-tidak-ada', message: 'Akun tidak ditemukan di database.');
-    }
+      if (role.isEmpty) {
+        throw FirebaseAuthException(code: 'data-tidak-ada', message: 'Akun tidak ditemukan di database.');
+      }
 
-    final userData = snapshot.data() as Map<String, dynamic>;
-    String namaLengkap = userData['nama'] ?? 'User';
+      final userData = snapshot.data() as Map<String, dynamic>;
+      String namaLengkap = userData['nama']?.toString() ?? 'User';
 
-    // Simpan ke SharedPreferences
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('isLoggedIn', true);
-    await prefs.setString('userName', namaLengkap);
-    await prefs.setString('userUid', uid);
-    await prefs.setString('userRole', role);
+      // Simpan ke SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('isLoggedIn', true);
+      await prefs.setString('userName', namaLengkap);
+      await prefs.setString('userUid', uid);
+      await prefs.setString('userRole', role);
 
-    // Navigasi
-    if (role == 'Siswa') {
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => DashboardSiswaPage(namaLengkap: namaLengkap)));
-    } else if (role == 'Guru') {
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => DashboardGuruPage(namaLengkap: namaLengkap)));
+      // Navigasi
+      if (role == 'Siswa') {
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => DashboardSiswaPage(namaLengkap: namaLengkap)));
+      } else if (role == 'Guru') {
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => DashboardGuruPage(namaLengkap: namaLengkap)));
+      }
+    } on FirebaseAuthException catch (e) {
+      String errorMsg;
+      switch (e.code) {
+        case 'user-not-found':
+          errorMsg = 'Akun tidak ditemukan. Silakan periksa email Anda.';
+          break;
+        case 'wrong-password':
+          errorMsg = 'Password salah. Silakan coba lagi.';
+          break;
+        case 'invalid-credential':
+          errorMsg = 'Email atau password salah.';
+          break;
+        case 'invalid-email':
+          errorMsg = 'Format email tidak valid.';
+          break;
+        default:
+          errorMsg = 'Terjadi kesalahan: ${e.message ?? 'Tidak diketahui'}.';
+      }
+      _showErrorDialog(errorMsg);
+    } catch (e) {
+      _showErrorDialog('Terjadi kesalahan: $e');
+    } finally {
+      setState(() => _isLoading = false);
     }
-  } on FirebaseAuthException catch (e) {
-    String errorMsg;
-    switch (e.code) {
-      case 'user-not-found':
-        errorMsg = 'Akun tidak ditemukan. Silakan periksa email Anda.';
-        break;
-      case 'wrong-password':
-        errorMsg = 'Password salah. Silakan coba lagi.';
-        break;
-      case 'invalid-credential':
-        errorMsg = 'Email atau password salah.';
-        break;
-      case 'invalid-email':
-        errorMsg = 'Format email tidak valid.';
-        break;
-      default:
-        errorMsg = 'Terjadi kesalahan: ${e.message ?? 'Tidak diketahui'}.';
-    }
-    _showErrorDialog(errorMsg);
-  } catch (e) {
-    _showErrorDialog('Terjadi kesalahan: $e');
-  } finally {
-    setState(() => _isLoading = false);
   }
-}
 
   @override
   Widget build(BuildContext context) {

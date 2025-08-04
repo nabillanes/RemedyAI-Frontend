@@ -1,127 +1,166 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'settings.dart';
 
-class SettingsPage extends StatefulWidget {
-  const SettingsPage({super.key});
+class DashboardGuruPage extends StatefulWidget {
+  const DashboardGuruPage({Key? key}) : super(key: key);
 
   @override
-  State<SettingsPage> createState() => _SettingsPageState();
+  State<DashboardGuruPage> createState() => _DashboardGuruPageState();
 }
 
-class _SettingsPageState extends State<SettingsPage> {
-  final TextEditingController _nameController = TextEditingController();
-  String selectedClass = '10';
-  bool isDarkTheme = false;
+class _DashboardGuruPageState extends State<DashboardGuruPage> {
+  String namaLengkap = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final doc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+      final data = doc.data();
+      if (data != null) {
+        setState(() {
+          namaLengkap = data['nama'] ?? '';
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        title: const Text('Pengaturan', style: TextStyle(color: Colors.white)),
-        iconTheme: const IconThemeData(color: Colors.white),
-        elevation: 0,
-      ),
       body: Stack(
         children: [
           // Background image
           Positioned.fill(
             child: Image.asset('assets/images/bg.png', fit: BoxFit.cover),
           ),
-          // Overlay
+          // Overlay gelap
           Positioned.fill(
             child: Container(color: Colors.black.withOpacity(0.5)),
           ),
-          // Konten
+
+          // Konten utama
           SafeArea(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-              child: ListView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Judul
                   const Text(
-                    'Pengaturan Akun',
+                    "Dashboard Guru",
                     style: TextStyle(
-                      fontSize: 20,
+                      fontSize: 24,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),
                   ),
                   const SizedBox(height: 16),
-                  TextField(
-                    controller: _nameController,
-                    style: const TextStyle(color: Colors.white),
-                    decoration: _inputDecoration('Nama Lengkap'),
+
+                  // Kartu guru
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Row(
+                      children: [
+                        const CircleAvatar(
+                          radius: 30,
+                          backgroundColor: Colors.white54,
+                          child: Icon(
+                            Icons.person_outline,
+                            size: 40,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "Halo, $namaLengkap!",
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              const Text(
+                                "Selamat datang kembali 👋",
+                                style: TextStyle(color: Colors.white70),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: 16),
-                  DropdownButtonFormField<String>(
-                    value: selectedClass,
-                    dropdownColor: Colors.grey[900],
-                    iconEnabledColor: Colors.white,
-                    decoration: _inputDecoration('Kelas'),
-                    style: const TextStyle(color: Colors.white),
-                    items: <String>['10', '11', '12'].map((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
-                      );
-                    }).toList(),
-                    onChanged: (newValue) {
-                      setState(() {
-                        selectedClass = newValue!;
-                      });
-                    },
-                  ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
+
+                  // Info
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
-                        'Tema Gelap',
-                        style: TextStyle(color: Colors.white),
+                      _infoCard(
+                        "Siswa Aktif",
+                        "24",
+                        Icons.group,
+                        Colors.greenAccent,
                       ),
-                      Switch(
-                        value: isDarkTheme,
-                        onChanged: (value) {
-                          setState(() {
-                            isDarkTheme = value;
-                          });
-                        },
-                        activeColor: Colors.blueAccent,
+                      const SizedBox(width: 12),
+                      _infoCard(
+                        "Remedial Hari Ini",
+                        "5",
+                        Icons.assignment,
+                        Colors.orangeAccent,
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
-                  Center(
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blueAccent,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
-                      ),
-                      onPressed: () {
-                        // Simpan perubahan logika
-                      },
-                      child: const Text('Simpan Perubahan'),
+                  const SizedBox(height: 24),
+
+                  const Text(
+                    "Fitur Guru",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
                     ),
                   ),
-                  const SizedBox(height: 24),
-                  const Divider(color: Colors.white70),
-                  ListTile(
-                    title: const Text('Ganti Kata Sandi', style: TextStyle(color: Colors.white)),
-                    trailing: const Icon(Icons.chevron_right, color: Colors.white),
-                    onTap: () {
-                      // Navigasi ke ganti password
-                    },
-                  ),
-                  ListTile(
-                    title: const Text('Logout', style: TextStyle(color: Colors.red)),
-                    trailing: const Icon(Icons.logout, color: Colors.red),
-                    onTap: () {
-                      // Logout logika
-                    },
+                  const SizedBox(height: 12),
+
+                  // Menu guru
+                  Expanded(
+                    child: ListView(
+                      children: [
+                        _menuItem(Icons.assignment, "Kelola Soal Remedial", () {
+                          // Navigasi ke halaman kelola soal
+                        }),
+                        _menuItem(Icons.bar_chart, "Rekap Nilai Remedial", () {
+                          // Navigasi ke halaman rekap
+                        }),
+                        _menuItem(Icons.chat, "Chat dengan AI", () {
+                          // Navigasi ke chatbot guru
+                        }),
+                        _menuItem(Icons.settings, "Pengaturan", () async {
+                          final shouldRefresh = await Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const SettingsPage()),
+                          );
+                          if (shouldRefresh == true) {
+                            _loadUserData(); // Refresh nama jika kembali dari settings
+                          }
+                        }),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -132,19 +171,68 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  InputDecoration _inputDecoration(String label) {
-    return InputDecoration(
-      labelText: label,
-      labelStyle: const TextStyle(color: Colors.white70),
-      filled: true,
-      fillColor: Colors.white.withOpacity(0.1),
-      enabledBorder: OutlineInputBorder(
-        borderSide: BorderSide(color: Colors.white.withOpacity(0.3)),
-        borderRadius: BorderRadius.circular(12),
+  // Helper menu
+  Widget _menuItem(IconData icon, String title, VoidCallback onTap) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(15),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(15),
+          splashColor: Colors.white24,
+          highlightColor: Colors.white10,
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.white70),
+              borderRadius: BorderRadius.circular(15),
+            ),
+            child: Row(
+              children: [
+                Icon(icon, color: Colors.white),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: const TextStyle(color: Colors.white, fontSize: 16),
+                  ),
+                ),
+                const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.white),
+              ],
+            ),
+          ),
+        ),
       ),
-      focusedBorder: OutlineInputBorder(
-        borderSide: const BorderSide(color: Colors.blueAccent),
-        borderRadius: BorderRadius.circular(12),
+    );
+  }
+
+  // Helper info card
+  Widget _infoCard(String title, String value, IconData icon, Color iconColor) {
+    return Expanded(
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.white30),
+        ),
+        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 12),
+        child: Column(
+          children: [
+            Icon(icon, color: iconColor, size: 30),
+            const SizedBox(height: 10),
+            Text(title, style: const TextStyle(color: Colors.white70)),
+            Text(
+              value,
+              style: const TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
