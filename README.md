@@ -1,7 +1,6 @@
-<<<<<<< HEAD
-# remedyai_new
+# RemedyAI-Frontend
 
-A new Flutter project.
+Aplikasi remedial untuk siswa dan memudahkan guru untuk merekap nilai hasil remedial berbasis Flutter.
 
 ## Getting Started
 
@@ -15,7 +14,3 @@ A few resources to get you started if this is your first Flutter project:
 For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
-=======
-# RemedyAI
-Aplikasi remedial untuk siswa dan memudahkan guru untuk merekap nilai hasil remedial
->>>>>>> bca304a52f6c4845442362b73b785873147520e9
